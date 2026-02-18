@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI Transaction Analyzer</title>
+
+<style>
+:root{
+    --primary:#00ff99;
+    --dark:#0f172a;
+    --card:rgba(255,255,255,0.05);
+    --border:rgba(255,255,255,0.15);
+}
+
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+    font-family:'Segoe UI',sans-serif;
+}
+
+body{
+    min-height:100vh;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    background:linear-gradient(135deg,#0f172a,#1e293b);
+    color:#fff;
+    padding:30px;
+}
+
+.container{
+    width:100%;
+    max-width:1100px;
+    display:grid;
+    grid-template-columns:1.2fr 1fr;
+    gap:40px;
+}
+
+.card{
+    background:var(--card);
+    backdrop-filter:blur(15px);
+    padding:40px;
+    border-radius:20px;
+    border:1px solid var(--border);
+    box-shadow:0 0 30px rgba(0,255,153,0.15);
+}
+
+h1{
+    color:var(--primary);
+    margin-bottom:10px;
+}
+
+.subtitle{
+    color:#ccc;
+    margin-bottom:30px;
+    font-size:14px;
+}
+
+label{
+    font-size:12px;
+    text-transform:uppercase;
+    letter-spacing:1px;
+    color:var(--primary);
+    margin-bottom:6px;
+    display:block;
+}
+
+input,select{
+    width:100%;
+    padding:12px;
+    border-radius:8px;
+    border:1px solid #334155;
+    background:#1e293b;
+    color:#fff;
+    margin-bottom:20px;
+    transition:.3s;
+}
+
+input:focus,select:focus{
+    outline:none;
+    border-color:var(--primary);
+    box-shadow:0 0 12px var(--primary);
+}
+
+.form-row{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:15px;
+}
+
+.button-group{
+    display:flex;
+    gap:15px;
+}
+
+button{
+    flex:1;
+    padding:14px;
+    border-radius:8px;
+    font-weight:600;
+    cursor:pointer;
+    border:none;
+    transition:.3s;
+}
+
+.btn-submit{
+    background:var(--primary);
+    color:#000;
+}
+
+.btn-submit:hover{
+    transform:translateY(-3px);
+    box-shadow:0 0 20px var(--primary);
+}
+
+.btn-reset{
+    background:transparent;
+    border:1px solid var(--primary);
+    color:#fff;
+}
+
+.btn-reset:hover{
+    background:var(--primary);
+    color:#000;
+}
+
+/* RIGHT SIDE INFO PANEL */
+
+.analytics-panel{
+    display:flex;
+    flex-direction:column;
+    justify-content:center;
+    align-items:center;
+    text-align:center;
+}
+
+.analytics-panel img{
+    width:250px;
+    margin-bottom:20px;
+    animation:float 4s ease-in-out infinite;
+}
+
+@keyframes float{
+    0%,100%{transform:translateY(0);}
+    50%{transform:translateY(15px);}
+}
+
+.result-box{
+    margin-top:25px;
+    padding:20px;
+    border-radius:10px;
+    display:none;
+}
+
+.result-box.show{
+    display:block;
+}
+
+.fraud{
+    background:#330000;
+    border:1px solid red;
+    color:#ff4d4d;
+}
+
+.legitimate{
+    background:#002b1a;
+    border:1px solid #00ff99;
+    color:#00ff99;
+}
+
+.back-button{
+    display:inline-block;
+    margin-bottom:20px;
+    color:var(--primary);
+    text-decoration:none;
+    font-weight:600;
+}
+.back-button:hover{
+    text-decoration:underline;
+}
+
+@media(max-width:900px){
+    .container{
+        grid-template-columns:1fr;
+    }
+}
+</style>
+</head>
+
+<body>
+
+<div class="container">
+
+<div class="card">
+    <a href="/" class="back-button">← Back to Home</a>
+    <h1>AI Transaction Analyzer</h1>
+    <p class="subtitle">Securely analyze transaction data using machine learning</p>
+
+    <form id="predictionForm">
+
+        <label>Step</label>
+        <input type="number" name="step" required>
+
+        <label>Transaction Type</label>
+        <select name="type" required>
+            <option value="">Select Type</option>
+            <option value="CASH_IN">CASH_IN</option>
+            <option value="CASH_OUT">CASH_OUT</option>
+            <option value="DEBIT">DEBIT</option>
+            <option value="PAYMENT">PAYMENT</option>
+            <option value="TRANSFER">TRANSFER</option>
+        </select>
+
+        <label>Amount</label>
+        <input type="number" name="amount" step="any" required>
+
+        <div class="form-row">
+            <div>
+                <label>Old Balance (Sender)</label>
+                <input type="number" name="oldbalanceOrg" step="any" required>
+            </div>
+            <div>
+                <label>New Balance (Sender)</label>
+                <input type="number" name="newbalanceOrig" step="any" required>
+            </div>
+        </div>
+
+        <div class="form-row">
+            <div>
+                <label>Old Balance (Receiver)</label>
+                <input type="number" name="oldbalanceDest" step="any" required>
+            </div>
+            <div>
+                <label>New Balance (Receiver)</label>
+                <input type="number" name="newbalanceDest" step="any" required>
+            </div>
+        </div>
+
+        <div class="button-group">
+            <button type="submit" class="btn-submit">Analyze</button>
+            <button type="reset" class="btn-reset">Clear</button>
+        </div>
+    </form>
+
+    <div id="resultBox" class="result-box"></div>
+</div>
+
+<div class="analytics-panel card">
+    <img src="{{ url_for('static', filename='images/shield.png') }}" alt="AI Shield">
+    <h3 style="color:var(--primary);">Real-Time Risk Monitoring</h3>
+    <p style="color:#ccc;margin-top:10px;">
+        Our AI model evaluates transactions instantly to detect fraud patterns and anomalies.
+    </p>
+</div>
+
+</div>
+
+<script>
+const form = document.getElementById('predictionForm');
+const resultBox = document.getElementById('resultBox');
+
+form.addEventListener('submit', async function(e){
+    e.preventDefault();
+    const formData = new FormData(this);
+    const data = Object.fromEntries(formData.entries());
+    data.isFlaggedFraud = 0;
+
+    const response = await fetch('/predict',{
+        method:'POST',
+        headers:{'Content-Type':'application/json'},
+        body:JSON.stringify(data)
+    });
+
+    const result = await response.json();
+
+    if(result.prediction == 1){
+        resultBox.className="result-box fraud show";
+        resultBox.innerHTML="⚠️ Fraudulent Transaction Detected";
+    }else{
+        resultBox.className="result-box legitimate show";
+        resultBox.innerHTML="✅ Transaction is Legitimate";
+    }
+});
+
+form.addEventListener('reset',()=>{
+    resultBox.classList.remove('show');
+});
+</script>
+
+</body>
+</html>

@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI Fraud Analysis Result</title>
+
+<style>
+:root{
+    --primary:#00ffcc;
+    --danger:#ff4d4d;
+    --success:#00ff99;
+    --bg:#0f172a;
+    --card:#1e293b;
+}
+
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+    font-family:'Segoe UI',sans-serif;
+}
+
+body{
+    background:linear-gradient(135deg,#0f172a,#1e293b);
+    min-height:100vh;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    padding:30px;
+    color:#fff;
+}
+
+.container{
+    background:var(--card);
+    padding:50px;
+    border-radius:20px;
+    width:100%;
+    max-width:650px;
+    box-shadow:0 0 40px rgba(0,255,204,0.1);
+    text-align:center;
+}
+
+h1{
+    color:var(--primary);
+    margin-bottom:30px;
+}
+
+.result-box{
+    padding:30px;
+    border-radius:15px;
+    margin-bottom:30px;
+    animation:fadeIn 0.5s ease;
+}
+
+.fraud{
+    background:#2a0f0f;
+    border:1px solid var(--danger);
+    color:var(--danger);
+}
+
+.legitimate{
+    background:#0f2a1f;
+    border:1px solid var(--success);
+    color:var(--success);
+}
+
+.result-box h2{
+    font-size:30px;
+    margin-bottom:10px;
+}
+
+.confidence-bar{
+    background:#111827;
+    border-radius:10px;
+    overflow:hidden;
+    height:18px;
+    margin-top:20px;
+}
+
+.confidence-fill{
+    height:100%;
+    width:0%;
+    transition:width 1s ease;
+}
+
+.details{
+    text-align:left;
+    margin-top:25px;
+    background:#111827;
+    padding:20px;
+    border-radius:10px;
+}
+
+.detail-item{
+    display:flex;
+    justify-content:space-between;
+    padding:10px 0;
+    border-bottom:1px solid #333;
+}
+
+.detail-item:last-child{
+    border-bottom:none;
+}
+
+.buttons{
+    margin-top:35px;
+    display:flex;
+    gap:15px;
+    justify-content:center;
+    flex-wrap:wrap;
+}
+
+.btn{
+    padding:12px 30px;
+    border-radius:8px;
+    font-weight:600;
+    cursor:pointer;
+    border:none;
+    transition:.3s;
+}
+
+.btn-primary{
+    background:var(--primary);
+    color:#000;
+}
+
+.btn-primary:hover{
+    box-shadow:0 0 20px var(--primary);
+    transform:translateY(-2px);
+}
+
+.btn-secondary{
+    background:transparent;
+    border:1px solid var(--primary);
+    color:#fff;
+}
+
+.btn-secondary:hover{
+    background:var(--primary);
+    color:#000;
+}
+
+@keyframes fadeIn{
+    from{opacity:0;transform:translateY(15px);}
+    to{opacity:1;transform:translateY(0);}
+}
+
+@media(max-width:600px){
+    .container{
+        padding:30px 20px;
+    }
+}
+</style>
+</head>
+<body>
+
+<div class="container">
+    <h1>AI Fraud Detection Result</h1>
+    <div id="resultContainer"></div>
+
+    <div class="buttons">
+        <button class="btn btn-primary" onclick="location.href='/predict'">Analyze Another</button>
+        <button class="btn btn-secondary" onclick="location.href='/'">Back to Home</button>
+    </div>
+</div>
+
+<script>
+function displayResult(){
+    const resultStr = sessionStorage.getItem('predictionResult');
+    const container = document.getElementById('resultContainer');
+
+    if(!resultStr){
+        container.innerHTML = `
+            <div class="result-box legitimate">
+                <h2>⚠️ No Result Found</h2>
+                <p>Please analyze a transaction first.</p>
+            </div>
+        `;
+        return;
+    }
+
+    const result = JSON.parse(resultStr);
+    const isFraud = result.prediction === 1;
+    const confidence = (result.confidence * 100).toFixed(2);
+
+    const resultClass = isFraud ? 'fraud' : 'legitimate';
+    const color = isFraud ? 'var(--danger)' : 'var(--success)';
+    const icon = isFraud ? '⚠️' : '✅';
+    const title = isFraud ? 'Fraudulent Transaction' : 'Legitimate Transaction';
+    const recommendation = isFraud ? 'Review Immediately' : 'Approved';
+
+    container.innerHTML = `
+        <div class="result-box ${resultClass}">
+            <h2>${icon} ${title}</h2>
+            <p>${confidence}% Confidence</p>
+
+            <div class="confidence-bar">
+                <div class="confidence-fill" id="confidenceFill" 
+                     style="background:${color};"></div>
+            </div>
+        </div>
+
+        <div class="details">
+            <div class="detail-item">
+                <span>Status</span>
+                <span>${isFraud ? '🚫 Fraud' : '✅ Legitimate'}</span>
+            </div>
+            <div class="detail-item">
+                <span>Confidence Score</span>
+                <span>${confidence}%</span>
+            </div>
+            <div class="detail-item">
+                <span>Recommendation</span>
+                <span>${recommendation}</span>
+            </div>
+        </div>
+    `;
+
+    setTimeout(()=>{
+        document.getElementById('confidenceFill').style.width = confidence + '%';
+    },200);
+
+    sessionStorage.removeItem('predictionResult');
+}
+
+displayResult();
+</script>
+
+</body>
+</html>
